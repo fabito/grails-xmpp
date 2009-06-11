@@ -3,7 +3,7 @@ package org.grails.xmpp
 class PogoTestService {
 
     static expose = ['xmpp']
-//    static xmppCommandPrefix = "@"
+//      static xmppCommandPrefix = "@"
     static xmppCommandMethodSuffix = ""
 
     boolean transactional = false

@@ -109,7 +109,7 @@ public class MessageListenerAdapter implements MessageListener, PacketListener {
             return methodInvoker.invoke();
         } catch (InvocationTargetException ex) {
             Throwable targetEx = ex.getTargetException();
-            throw ex;
+            throw targetEx;
         }
     }
 
