@@ -1,9 +1,10 @@
 xmpp.autoStartup = true
-xmpp.username=
-xmpp.password=
-xmpp.connection.host=
-xmpp.connection.port=
-xmpp.connection.service=
+xmpp.username="grails-xmpp"
+xmpp.password="grails"
+xmpp.connection.host="jabber.org"
+xmpp.connection.port=5222
+xmpp.connection.service="jabber.org"
+xmpp.connection.SASLAuthenticationEnabled=true
 
 
 // log4j configuration

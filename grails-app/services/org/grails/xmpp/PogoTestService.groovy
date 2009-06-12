@@ -8,13 +8,12 @@ class PogoTestService {
 
     boolean transactional = false
 
-    def help() {
+    def help(p) {
         log.info "helping"
     }
 
     def ls() {
         log.info "lsing"
-
     }
 
     def find() {

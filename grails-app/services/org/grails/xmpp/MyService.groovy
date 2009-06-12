@@ -14,11 +14,11 @@ class MyService implements PacketListener {
     static xmppCommandMethodSuffix = "XmppCommand"
 
     def xmppService
+    def xmppAgent
 
     boolean transactional = false
 
     def serviceMethod() {
-
     }
 
     void processPacket(Packet packet) {
@@ -34,7 +34,27 @@ class MyService implements PacketListener {
     }
 
     def helpXmppCommand(Packet packet){
-        processPacket(packet)
+    	log.info "helping!!!!"
+        if (packet instanceof Message) {
+            Message m = (Message) packet
+            xmppService.removeContact(xmppAgent, m.from)
+        }
+    }
+
+    def inviteXmppCommand(Packet packet){
+    	println "inviting!!!!"
+        if (packet instanceof Message) {
+            Message m = (Message) packet
+            xmppService.sendInvitation(xmppAgent, "fabio.uechi@jabber.org")
+        }
+    }
+
+    def listAllXmppCommand(Packet packet){
+        if (packet instanceof Message) {
+            Message m = (Message) packet
+            def list = xmppService.getContactList(xmppAgent)
+            xmppService.sendMessage(xmppAgent, m.from, list.toString())
+        }
     }
 
 

@@ -7,16 +7,16 @@ import org.codehaus.groovy.grails.commons.ConfigurationHolder
  */
 class XmppBootStrap {
 
-    def xmppAgent
+    //def xmppAgent
 
     def init = { servletContext ->
-        def ctx = servletContext.getAttribute(ApplicationAttributes.APPLICATION_CONTEXT)
+/*        def ctx = servletContext.getAttribute(ApplicationAttributes.APPLICATION_CONTEXT)
         xmppAgent = ctx.xmppAgent
         if(ConfigurationHolder.config?.xmpp?.autoStartup) xmppAgent.connect()
-    }
+*/    }
 
     def destroy = {
-        xmppAgent.disconnect();
+  /*      xmppAgent.disconnect();*/
     }
 
 
