@@ -18,6 +18,7 @@ and provide IM based services to grails application.
     <resource>org.grails.xmpp.XmppService</resource>
     <resource>org.grails.xmpp.MyService</resource>
     <resource>org.grails.xmpp.PogoTestService</resource>
+    <resource>org.grails.xmpp.RosterListenerImplementerService</resource>
   </resources>
   <dependencies>
     <plugin name='services' version='1.1' />

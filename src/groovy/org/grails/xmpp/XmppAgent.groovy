@@ -16,6 +16,7 @@ import org.jivesoftware.smack.packet.Presence
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import org.jivesoftware.smack.SASLAuthenticationimport org.jivesoftware.smack.filter.MessageTypeFilterimport org.springframework.beans.factory.InitializingBeanimport org.jivesoftware.smack.ReconnectionManager
+
 /**
  *
  * @author fabito
@@ -32,6 +33,7 @@ class XmppAgent implements InitializingBean {
     ChatManager chatManager = null;
     ConnectionConfiguration connectionConfiguration = null;
     List<PacketListener> packetListeners = []
+    List<RosterListener> rosterListeners = []
     ProxyInfo proxyInfo
 
     public void destroy() throws Exception {
@@ -53,7 +55,7 @@ class XmppAgent implements InitializingBean {
         log.info("Logging in with user: " + username)
         connection.login(this.username, this.password, this.username + Long.toHexString(System.currentTimeMillis()))
 
-        log.info("Adding listeners.");
+        log.info("Adding Packet listeners.");
         packetListeners.each { listener ->
             log.info "Adding " + listener.getClass()
             assert listener instanceof PacketListener
@@ -62,7 +64,12 @@ class XmppAgent implements InitializingBean {
         }
 
         this.roster = connection.getRoster()
-        //this.roster.addRosterListener(this)
+        log.info("Adding Roster listeners.");
+        rosterListeners.each { listener ->
+            log.info "Adding " + listener.getClass()
+            this.roster.addRosterListener(listener as RosterListener)
+        }
+        
         this.chatManager = connection.getChatManager()
         //this.chatManager.addChatListener(this)
         this.chats = new HashMap<String, Chat>()
@@ -75,8 +82,8 @@ class XmppAgent implements InitializingBean {
     }
 	
     void afterPropertiesSet() {
-    	//ReconnectionManager recMgr = new ReconnectionManager()
-    	//this.connection.addConnectionListener(recMgr)
+//    	ReconnectionManager recMgr = new ReconnectionManager()
+//    	this.connection.addConnectionListener(recMgr)
     }
 
     

@@ -1,10 +1,10 @@
-import org.codehaus.groovy.grails.commons.GrailsClassUtils
+import org.jivesoftware.smack.RosterListenerimport org.codehaus.groovy.grails.commons.GrailsClassUtils
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CFG
 import grails.util.GrailsUtil
 
 import org.jivesoftware.smack.packet.Packet
 import org.jivesoftware.smack.packet.Message
-import org.jivesoftware.smack.PacketListener
+import org.jivesoftware.smack.PacketListenerimport org.jivesoftware.smack.RosterListener
 import org.jivesoftware.smack.filter.PacketFilter
 
 class XmppGrailsPlugin {
@@ -53,7 +53,7 @@ and provide IM based services to grails application.
 		}
 		
 		/*
-		 * For each service with the expose xmpp attribute
+		 * For each service containing the expose xmpp attribute
 		 * creates and registers the respectice MessageListenerAdapter bean
 		 * in the spring context
 		 */
@@ -61,7 +61,6 @@ and provide IM based services to grails application.
 			def serviceClass = service.getClazz()
 			def exposeList = GrailsClassUtils.getStaticPropertyValue(serviceClass, 'expose')
 			if (exposeList!=null && exposeList.contains('xmpp')) {
-				def sName = service.propertyName.replaceFirst("Service","")
 				
 				def listenerMethod = GrailsClassUtils.getStaticPropertyValue(serviceClass, 'listenerMethod')
 				if (!listenerMethod)
@@ -77,7 +76,7 @@ and provide IM based services to grails application.
 				if (xmppCommandMethodSuffix == null)
 				xmppCommandMethodSuffix = org.grails.xmpp.MessageListenerAdapter.ORIGINAL_DEFAULT_COMMAND_METHOD_SUFFIX
 				
-				"${sName}XmppMessageListener"(org.grails.xmpp.MessageListenerAdapter, ref("${service.propertyName}")) {
+				"${service.shortName}XmppMessageListener"(org.grails.xmpp.MessageListenerAdapter, ref("${service.propertyName}")) {
 					defaultListenerMethod = listenerMethod
 					defaultXmppCommandPrefix = xmppCommandPrefix
 					defaultXmppCommandMethodSuffix = xmppCommandMethodSuffix
@@ -88,73 +87,18 @@ and provide IM based services to grails application.
 	}
 	
 	def doWithApplicationContext = { applicationContext ->
-
-		application.serviceClasses?.each { service ->
+		// Checks all services and controllers which implement		// PackageListener or MessageListener and add to xmppAgent		application.serviceClasses?.each { service ->
 			def serviceClass = service.getClazz()
 			def exposeList = GrailsClassUtils.getStaticPropertyValue(serviceClass, 'expose')
 			if (exposeList!=null && exposeList.contains('xmpp')) {
-				println ">>>> starting XMPP listener for ${service.shortName}"
-				
-				//                serviceClass.metaClass.methods?.find { it.name.endsWith("Command") }?.each { m ->
-				//                    if (serviceClass.metaClass.respondsTo(serviceClass, m.name, Packet)) {
-				//
-				//                        def methodName = m.name
-				//                        def closure = m
-				//                        println methodName
-				//
-				//                        def myListener = [ processPacket: { packet ->
-				//                                println "Received message from ${packet.from}, subject: ${packet.subject}, body: ${packet.body}"
-				//                                //serviceClass.metaClass.invokeMethod(serviceClass, m.name, packet)
-				//                                closure.call(packet)
-				//                         } ] as PacketListener
-				//
-				//                        def myFilter = [accept:{ packet ->
-				//                                //println "Received message from ${packet.from}, subject: ${packet.subject}, body: ${packet.body}"
-				//                                if (packet instanceof Message) {
-				//                                        Message msg = (Message) packet
-				//                                        return msg.body.startsWith("@" + methodName.replace("Command",""))
-				//                                }
-				//                                return false;
-				//                        }] as PacketFilter
-				//
-				//                        applicationContext.xmppAgent.packetListeners.add(myListener)
-				//
-				//                    }
-				//                }
-				
-				
-				//def svc = applicationContext.getBean("${serviceClass.propertyName}")
-				//applicationContext.xmppAgent.packetListeners.add(myListener)
-				
-				def sName = service.propertyName.replaceFirst("Service","")
-				applicationContext.xmppAgent.packetListeners.add(applicationContext.getBean("${sName}XmppMessageListener"))
-				
+				println ">>>> Adding XMPP listener for ${service.shortName} to xmppAgent"
+				applicationContext.xmppAgent.packetListeners.add(applicationContext.getBean("${service.shortName}XmppMessageListener"))
 			}
-			
-			if (CFG.config.xmpp.autoStartup)
-				applicationContext.xmppAgent.connect()
+        	if(PacketListener.class.isAssignableFrom(serviceClass)) {                def svc = applicationContext.getBean("${service.propertyName}")                applicationContext.xmppAgent.packetListeners.add(svc)            }        	if(RosterListener.class.isAssignableFrom(serviceClass)) {                def svc = applicationContext.getBean("${service.propertyName}")                applicationContext.xmppAgent.rosterListeners.add(svc)            }				}
+				//initializes xmppAgent
+		if (CFG.config.xmpp.autoStartup)
+			applicationContext.xmppAgent.connect()
 
-			
-		}
-		
-		
-		// TODO Checks all services and controllers which implement
-		// PackageListener or MessageListener and add to xmppconnection
-		//        for(serviceClass in application.serviceClasses) {
-		//            if(PacketListener.class.isAssignableFrom(serviceClass.clazz)) {
-		//
-		//                def myListener = [processPacket:{ packet ->
-		//                        println "Received message from ${packet.from}, subject: ${packet.subject}, body: ${packet.body}"
-		//
-		//                }] as PacketListener
-		//
-		//                def svc = applicationContext.getBean("${serviceClass.propertyName}")
-		//                applicationContext.xmppAgent.packetListeners.add(myListener)
-		//                applicationContext.xmppAgent.packetListeners.add(svc)
-		//                //TODO how to add new property to a GrailsService
-		//                //serviceClass.metaClass.xmppAgent << {-> applicationContext.xmppAgent }
-		//            }
-		//        }
 	}
 	
 	
@@ -171,5 +115,41 @@ and provide IM based services to grails application.
 	def onConfigChange = { event ->
 		// TODO Implement code that is executed when the project configuration changes.
 		// The event is the same as for 'onChange'.
-	}
+	}					
 }
+
+
+
+
+//                serviceClass.metaClass.methods?.find { it.name.endsWith("Command") }?.each { m ->
+//                    if (serviceClass.metaClass.respondsTo(serviceClass, m.name, Packet)) {
+//
+//                        def methodName = m.name
+//                        def closure = m
+//                        println methodName
+//
+//                        def myListener = [ processPacket: { packet ->
+//                                println "Received message from ${packet.from}, subject: ${packet.subject}, body: ${packet.body}"
+//                                //serviceClass.metaClass.invokeMethod(serviceClass, m.name, packet)
+//                                closure.call(packet)
+//                         } ] as PacketListener
+//
+//                        def myFilter = [accept:{ packet ->
+//                                //println "Received message from ${packet.from}, subject: ${packet.subject}, body: ${packet.body}"
+//                                if (packet instanceof Message) {
+//                                        Message msg = (Message) packet
+//                                        return msg.body.startsWith("@" + methodName.replace("Command",""))
+//                                }
+//                                return false;
+//                        }] as PacketFilter
+//
+//                        applicationContext.xmppAgent.packetListeners.add(myListener)
+//
+//                    }
+//                }
+
+
+//def svc = applicationContext.getBean("${serviceClass.propertyName}")
+//applicationContext.xmppAgent.packetListeners.add(myListener)
+
+		// TODO Checks all services and controllers which implement		// PackageListener or MessageListener and add to xmppconnection		//        for(serviceClass in application.serviceClasses) {		//            if(PacketListener.class.isAssignableFrom(serviceClass.clazz)) {		//		//                def myListener = [processPacket:{ packet ->		//                        println "Received message from ${packet.from}, subject: ${packet.subject}, body: ${packet.body}"		//		//                }] as PacketListener		//		//                def svc = applicationContext.getBean("${serviceClass.propertyName}")		//                applicationContext.xmppAgent.packetListeners.add(myListener)		//                applicationContext.xmppAgent.packetListeners.add(svc)		//                //TODO how to add new property to a GrailsService		//                //serviceClass.metaClass.xmppAgent << {-> applicationContext.xmppAgent }		//            }		//        }

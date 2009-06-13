@@ -4,10 +4,9 @@ import org.jivesoftware.smack.packet.Packet
 import org.jivesoftware.smack.PacketListener
 import org.jivesoftware.smack.Chat
 
-
 import org.jivesoftware.smack.packet.Message
 
-class MyService implements PacketListener {
+class MyService {
 
     static expose = ['xmpp']
     static xmppCommandPrefix = "#"
