@@ -1,26 +1,28 @@
 <plugin name='xmpp' version='0.1' grailsVersion='1.1 &gt; *'>
   <author>Fábio Franco Uechi</author>
   <authorEmail>fabio.uechi@gmail.com</authorEmail>
-  <title>Plugin summary/headline</title>
+  <title>Grails XMPP Plugin</title>
   <description>\
-Eases the development of real-time web applications. Built upon the Smack API
-and provide IM based services to grails application.
+Provides XMPP/Jabber based services to grails applications. Built upon the Smack API this plugin allows
+an application to send and receive xmpp packets (presence, message, etc). Basically it creates a Roster 
+which automatically connects, to a pre configured host, at application startup. All the mentioned xmpp 
+services rely upon this Roster. Eases the development of real-time web applications.
+One of the main features is the ability to expose methods as commands (method name = command) making it 
+easier to develop XmppBots, for example.
+Another feature is auto-detection of PacketListeners and RosterListeners.
 </description>
   <documentation>http://grails.org/GrailsXmpp+Plugin</documentation>
   <resources>
     <resource>org.grails.xmpp.XmppController</resource>
-    <resource>DefaultXmppBot</resource>
-    <resource>TesteXmppBot</resource>
     <resource>XmppBootStrap</resource>
     <resource>UrlMappings</resource>
     <resource>Config</resource>
     <resource>DataSource</resource>
     <resource>org.grails.xmpp.XmppService</resource>
-    <resource>org.grails.xmpp.MyService</resource>
+    <resource>org.grails.xmpp.DefaultXmppBotService</resource>
+    <resource>org.grails.xmpp.PacketListenerImplementerService</resource>
     <resource>org.grails.xmpp.PogoTestService</resource>
     <resource>org.grails.xmpp.RosterListenerImplementerService</resource>
   </resources>
-  <dependencies>
-    <plugin name='services' version='1.1' />
-  </dependencies>
+  <dependencies />
 </plugin>
