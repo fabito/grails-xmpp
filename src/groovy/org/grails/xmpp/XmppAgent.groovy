@@ -15,7 +15,7 @@ import org.jivesoftware.smack.packet.Message
 import org.jivesoftware.smack.packet.Presence
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
-import org.jivesoftware.smack.SASLAuthenticationimport org.jivesoftware.smack.filter.MessageTypeFilterimport org.springframework.beans.factory.InitializingBeanimport org.jivesoftware.smack.ReconnectionManager
+import org.jivesoftware.smack.SASLAuthenticationimport org.jivesoftware.smack.filter.*import org.springframework.beans.factory.InitializingBeanimport org.jivesoftware.smack.ReconnectionManager
 
 /**
  *
@@ -23,14 +23,12 @@ import org.jivesoftware.smack.SASLAuthenticationimport org.jivesoftware.smack.f
  */
 class XmppAgent implements InitializingBean {
 
-    private static final Log log = LogFactory.getLog(XmppAgent.class);
+    final Log log = LogFactory.getLog(XmppAgent.class);
 
     String username = null;
     String password = null;
     XMPPConnection connection = null;
     Roster roster = null;
-    Map<String, Chat> chats = null;
-    ChatManager chatManager = null;
     ConnectionConfiguration connectionConfiguration = null;
     List<PacketListener> packetListeners = []
     List<RosterListener> rosterListeners = []
@@ -41,50 +39,70 @@ class XmppAgent implements InitializingBean {
         unavailablePresence.setStatus("I´m down, sorry for the inconvenience...")
         this.connection.disconnect(unavailablePresence)
     }
- 
-    def connect(){
-        log.info(this.connectionConfiguration.toString());
-        //this.connection = new XMPPConnection(this.connectionConfiguration);
 
-        log.info("estabilishing connection")
+    def disconnect(){
+    	destroy()
+    }
+    
+    def connect(){
+    	if (this.connection.isConnected())
+    		return
+
+    	log.info("Estabilishing connection...")
         this.connection.connect()
-        log.info("Connected")
+        log.info("Successfully connected")
+
+		/*
+		 * TODO verify why the hell this is raising 
+		 * "Could not find which method <init>() to invoke from this list" 
+		 
+    	ReconnectionManager recMgr = new ReconnectionManager()
+    	this.connection.addConnectionListener(recMgr)
+    	
+    	*/
 
         SASLAuthentication.supportSASLMechanism("PLAIN", 0)
-        
         log.info("Logging in with user: " + username)
         connection.login(this.username, this.password, this.username + Long.toHexString(System.currentTimeMillis()))
-
-        log.info("Adding Packet listeners.");
+        registerListeners()
+    }
+    
+    def registerListeners = {
+        log.info("Registering PacketListeners.");
         packetListeners.each { listener ->
-            log.info "Adding " + listener.getClass()
+        	log.info "Adding " + (listener instanceof MessageListenerAdapter ? listener.delegate.getClass() : listener.getClass())
             assert listener instanceof PacketListener
-            //this.connection.addPacketListener(listener as PacketListener, new MessageTypeFilter())
-            this.connection.addPacketListener(listener as PacketListener, null)
+            def msgFilter = new AndFilter()
+        	msgFilter.addFilter(new MessageTypeFilter(Message.Type.chat) as PacketFilter)
+        	msgFilter.addFilter(new NotFilter(new PacketExtensionFilter("paused", "http://jabber.org/protocol/chatstates")) as PacketFilter )
+        	msgFilter.addFilter(new NotFilter(new PacketExtensionFilter("composing", "http://jabber.org/protocol/chatstates")) as PacketFilter )
+        	this.connection.addPacketListener(listener as PacketListener, msgFilter)
         }
-
         this.roster = connection.getRoster()
-        log.info("Adding Roster listeners.");
+        log.info("Registering RosterListeners.");
         rosterListeners.each { listener ->
             log.info "Adding " + listener.getClass()
             this.roster.addRosterListener(listener as RosterListener)
         }
-        
-        this.chatManager = connection.getChatManager()
-        //this.chatManager.addChatListener(this)
-        this.chats = new HashMap<String, Chat>()
     }
-
-    def disconnect(){
-        Presence unavailablePresence = new Presence(Presence.Type.unavailable)
-        unavailablePresence.setStatus("I´m down, sorry for the inconvenience...")
-        this.connection.disconnect(unavailablePresence)
+    
+    def unregisterListeners = {
+            log.info("Unregistering PacketListeners.");
+            packetListeners.each { listener ->
+            	log.info "Removing " + (listener instanceof MessageListenerAdapter ? listener.delegate.getClass() : listener.getClass())
+            	this.connection.removePacketListener(listener)
+            }
+            this.roster = connection.getRoster()
+            log.info("Unregistering RosterListeners.");
+            rosterListeners.each { listener ->
+                log.info "Removing " + listener.getClass()
+                this.roster.removeRosterListener(listener)
+            }
+    	packetListeners = []
+    	rosterListeners = []
     }
 	
     void afterPropertiesSet() {
-//    	ReconnectionManager recMgr = new ReconnectionManager()
-//    	this.connection.addConnectionListener(recMgr)
     }
 
-    
 }

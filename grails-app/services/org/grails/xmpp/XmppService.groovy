@@ -4,10 +4,13 @@ import org.jivesoftware.smack.Chat
 import org.jivesoftware.smack.packet.Message
 import org.jivesoftware.smack.RosterListenerimport org.jivesoftware.smack.packet.Presence
 import org.apache.commons.lang.StringUtils
-class XmppService  { //implements RosterListener
+
+/**
+ * Provides Basic XMPP Services
+ */
+class XmppService { 
 	
 	boolean transactional = false
-	def xmppAgent
 	
 	def sendInvitation = { xmppAgent, to ->
 		if (to instanceof List) {

@@ -23,7 +23,7 @@ public class MessageListenerAdapter implements MessageListener, PacketListener {
 	/**
 	 * Out-of-the-box value for the default listener method: "handleMessage".
 	 */
-	public static final String ORIGINAL_DEFAULT_LISTENER_METHOD = "handleMessage";
+	public static final String ORIGINAL_DEFAULT_LISTENER_METHOD = "onXmppMessage";
 	private String defaultListenerMethod = ORIGINAL_DEFAULT_LISTENER_METHOD;
 	private String defaultXmppCommandPrefix = ORIGINAL_DEFAULT_COMMAND_PREFIX;
 	private String defaultXmppCommandMethodSuffix = ORIGINAL_DEFAULT_COMMAND_METHOD_SUFFIX;
@@ -47,10 +47,13 @@ public class MessageListenerAdapter implements MessageListener, PacketListener {
 		try {
 			if (packet instanceof Message) {
 				onMessage(null, (Message) packet);
-			} else { // RosterPacket, Presence
-				logger.debug(packet.toXML());
-				invokeListenerMethod(getDefaultListenerMethod(),
-						new Object[] { packet });
+			} else { // RosterPacket, Presence, etc
+				if (logger.isDebugEnabled()) {
+					logger.debug("Not a Message Packet");
+					logger.debug(packet.toXML());
+				}
+//				invokeListenerMethod(getDefaultListenerMethod(),
+//						new Object[] { packet });
 			}
 		} catch (Throwable ex) {
 			handleListenerException(ex);
