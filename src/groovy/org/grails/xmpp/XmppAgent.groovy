@@ -34,6 +34,9 @@ class XmppAgent implements InitializingBean {
     List<RosterListener> rosterListeners = []
     ProxyInfo proxyInfo
 
+    PacketFilter msgFilter = null;
+
+	
     public void destroy() throws Exception {
         Presence unavailablePresence = new Presence(Presence.Type.unavailable)
         unavailablePresence.setStatus("I´m down, sorry for the inconvenience...")
@@ -72,10 +75,6 @@ class XmppAgent implements InitializingBean {
         packetListeners.each { listener ->
         	log.info "Adding " + (listener instanceof MessageListenerAdapter ? listener.delegate.getClass() : listener.getClass())
             assert listener instanceof PacketListener
-            def msgFilter = new AndFilter()
-        	msgFilter.addFilter(new MessageTypeFilter(Message.Type.chat) as PacketFilter)
-        	msgFilter.addFilter(new NotFilter(new PacketExtensionFilter("paused", "http://jabber.org/protocol/chatstates")) as PacketFilter )
-        	msgFilter.addFilter(new NotFilter(new PacketExtensionFilter("composing", "http://jabber.org/protocol/chatstates")) as PacketFilter )
         	this.connection.addPacketListener(listener as PacketListener, msgFilter)
         }
         this.roster = connection.getRoster()
@@ -103,6 +102,10 @@ class XmppAgent implements InitializingBean {
     }
 	
     void afterPropertiesSet() {
+    	msgFilter = new AndFilter()
+    	msgFilter.addFilter(new MessageTypeFilter(Message.Type.chat) as PacketFilter)
+    	msgFilter.addFilter(new NotFilter(new PacketExtensionFilter("paused", "http://jabber.org/protocol/chatstates")) as PacketFilter )
+    	msgFilter.addFilter(new NotFilter(new PacketExtensionFilter("composing", "http://jabber.org/protocol/chatstates")) as PacketFilter )
     }
 
 }

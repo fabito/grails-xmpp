@@ -13,6 +13,10 @@ import org.springframework.util.Assert;
 import org.springframework.util.MethodInvoker;
 
 /**
+ * Adapter for {@linkplain MessageListener} and {@linkplain PacketListener}
+ * Delegates the received message/packet to the correspondent method in the 
+ * delegate object. Looks for methods matching the specified prefix and suffix or invoke 
+ * the respective default method otherwise. 
  * 
  * @author fabito
  */
@@ -46,15 +50,24 @@ public class MessageListenerAdapter implements MessageListener, PacketListener {
 	public void processPacket(Packet packet) {
 		try {
 			if (packet instanceof Message) {
+				
+				if (logger.isDebugEnabled()) {
+					logger.debug("Received Packet");
+					logger.debug(packet.toXML());
+				}
+				
 				onMessage(null, (Message) packet);
+				
 			} else { // RosterPacket, Presence, etc
 				if (logger.isDebugEnabled()) {
 					logger.debug("Not a Message Packet");
 					logger.debug(packet.toXML());
 				}
-//				invokeListenerMethod(getDefaultListenerMethod(),
-//						new Object[] { packet });
 			}
+		} catch	(NoSuchMethodException nsme) {
+			try {
+				invokeListenerMethod(getDefaultListenerMethod(), new Object[] { packet });
+			} catch (Throwable e) {}
 		} catch (Throwable ex) {
 			handleListenerException(ex);
 		}
@@ -67,7 +80,7 @@ public class MessageListenerAdapter implements MessageListener, PacketListener {
 		if (StringUtils.isNotEmpty(body)
 				&& body.startsWith(getDefaultXmppCommandPrefix())) {
 
-			String methodName = body.substring(1);
+			String methodName = body.substring(getDefaultXmppCommandPrefix().length());
 			if (body.contains(" ")) {
 				methodName = StringUtils.substringBetween(body,
 						getDefaultXmppCommandPrefix(), " ");
@@ -85,23 +98,22 @@ public class MessageListenerAdapter implements MessageListener, PacketListener {
 			}
 
 		} else {
-			// logger.debug("ignore??");
-			if (chat == null) {
-				invokeListenerMethod(getDefaultListenerMethod(),
-						new Object[] { (Packet) message });
-			} else {
-				invokeListenerMethod(getDefaultListenerMethod(), new Object[] {
+			
+			if (StringUtils.isNotEmpty(body)) {
+				if (chat == null) {
+					invokeListenerMethod(getDefaultListenerMethod(),
+							new Object[] { (Packet) message });
+				} else {
+					invokeListenerMethod(getDefaultListenerMethod(), new Object[] {
 						chat, message });
+				}
 			}
 		}
 
 	}
 
 	private void handleListenerException(Throwable ex) {
-		if (ex instanceof NoSuchMethodException) {
-			// logger.warn("");
-		}
-		logger.error(ex);
+		logger.error(ex.getMessage(), ex);
 	}
 
 	protected Object invokeListenerMethod(String methodName, Object[] arguments)

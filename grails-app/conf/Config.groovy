@@ -6,6 +6,13 @@ xmpp.connection.port=5222
 xmpp.connection.service="jabber.org"
 xmpp.connection.SASLAuthenticationEnabled=true
 
+//xmpp.autoStartup = true
+//xmpp.username="greenteam.brightzone"
+//xmpp.password="timeverde"
+//xmpp.connection.host="talk.google.com"
+//xmpp.connection.port=5222
+//xmpp.connection.service="gmail.com"
+//xmpp.connection.SASLAuthenticationEnabled=false
 
 // log4j configuration
 log4j = {
