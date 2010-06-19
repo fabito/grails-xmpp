@@ -8,7 +8,7 @@ import org.jivesoftware.smack.PacketListenerimport org.jivesoftware.smack.Roste
 import org.jivesoftware.smack.filter.PacketFilterimport org.jivesoftware.smack.Chatimport org.jivesoftware.smack.packet.Presenceimport org.codehaus.groovy.grails.commons.ServiceArtefactHandlerimport org.apache.commons.lang.StringUtils
 class XmppGrailsPlugin {
 	// the plugin version
-	def version = "0.1.1"
+	def version = "0.2"
 	// the version or versions of Grails the plugin is designed for
 	def grailsVersion = "1.1 > *"	// resources that are excluded from plugin packaging
 	def pluginExcludes = [

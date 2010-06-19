@@ -1,4 +1,4 @@
-<plugin name='xmpp' version='0.1' grailsVersion='1.1 &gt; *'>
+<plugin name='xmpp' version='0.2' grailsVersion='1.1 &gt; *'>
   <author>Fábio Franco Uechi</author>
   <authorEmail>fabio.uechi@gmail.com</authorEmail>
   <title>Grails XMPP Plugin</title>
@@ -11,18 +11,19 @@ One of the main features is the ability to expose methods as commands (method na
 easier to develop XmppBots, for example.
 Another feature is auto-detection of PacketListeners and RosterListeners.
 </description>
-  <documentation>http://grails.org/GrailsXmpp+Plugin</documentation>
+  <documentation>http://grails.org/plugin/xmpp</documentation>
   <resources>
-    <resource>org.grails.xmpp.XmppController</resource>
-    <resource>XmppBootStrap</resource>
-    <resource>UrlMappings</resource>
     <resource>Config</resource>
     <resource>DataSource</resource>
-    <resource>org.grails.xmpp.XmppService</resource>
+    <resource>UrlMappings</resource>
+    <resource>XmppBootStrap</resource>
+    <resource>org.grails.xmpp.XmppController</resource>
     <resource>org.grails.xmpp.DefaultXmppBotService</resource>
     <resource>org.grails.xmpp.PacketListenerImplementerService</resource>
     <resource>org.grails.xmpp.PogoTestService</resource>
     <resource>org.grails.xmpp.RosterListenerImplementerService</resource>
+    <resource>org.grails.xmpp.XmppService</resource>
   </resources>
   <dependencies />
+  <behavior />
 </plugin>
