@@ -15,13 +15,19 @@ import org.jivesoftware.smack.packet.Message
 import org.jivesoftware.smack.packet.Presence
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
-import org.jivesoftware.smack.SASLAuthenticationimport org.jivesoftware.smack.filter.*import org.springframework.beans.factory.InitializingBeanimport org.jivesoftware.smack.ReconnectionManager
+import java.net.InetAddress
+import org.codehaus.groovy.grails.commons.ConfigurationHolder
+import org.jivesoftware.smack.SASLAuthentication
+import org.jivesoftware.smack.filter.*
+import org.springframework.beans.factory.InitializingBean
+import org.jivesoftware.smack.ReconnectionManager
+
 
 /**
  *
  * @author fabito
  */
-class XmppAgent implements InitializingBean {
+class XmppAgent implements InitializingBean  {
 
     final Log log = LogFactory.getLog(XmppAgent.class);
 
@@ -32,7 +38,7 @@ class XmppAgent implements InitializingBean {
     ConnectionConfiguration connectionConfiguration = null;
     List<PacketListener> packetListeners = []
     List<RosterListener> rosterListeners = []
-    ProxyInfo proxyInfo
+    ProxyInfo proxyInfo	
 
     PacketFilter msgFilter = null;
 
@@ -66,7 +72,15 @@ class XmppAgent implements InitializingBean {
 
         SASLAuthentication.supportSASLMechanism("PLAIN", 0)
         log.info("Logging in with user: " + username)
-        connection.login(this.username, this.password, this.username + Long.toHexString(System.currentTimeMillis()))
+        def hostName = 'unknown';
+        try {
+                hostName = InetAddress.getLocalHost().getHostName();
+        } catch ( Exception e )
+        {
+        }
+        def appName = ConfigurationHolder.config.grails.project.groupId;       
+        
+        connection.login(this.username, this.password, appName +'@' + hostName + '-' + Long.toHexString(System.currentTimeMillis()))
         registerListeners()
     }
     
@@ -107,5 +121,6 @@ class XmppAgent implements InitializingBean {
     	msgFilter.addFilter(new NotFilter(new PacketExtensionFilter("paused", "http://jabber.org/protocol/chatstates")) as PacketFilter )
     	msgFilter.addFilter(new NotFilter(new PacketExtensionFilter("composing", "http://jabber.org/protocol/chatstates")) as PacketFilter )
     }
+
 
 }
